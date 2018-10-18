@@ -87,7 +87,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     var previousPreviousRange : NSRange?
     
     
-    
+    //MARK:- Sending photos and videos
     lazy var imagePicker : UIImagePickerController = {
         let picker = UIImagePickerController()
         picker.delegate = self
@@ -117,14 +117,15 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         var videoDownloadUrl : String?
         var imageWidth : NSNumber?
         var imageHeight : NSNumber?
+        guard let toID = self.userViewModel?.id else { return }
         
         if let videoURL = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.mediaURL)] as? URL{
             
-            if let thumbnail = getThumbnailFromVideoURL(videoUrl: videoURL) {
+            if let thumbnail = videoURL.getThumbnailFromVideoURL() {
                 imageWidth = thumbnail.size.width as NSNumber
                 imageHeight = thumbnail.size.height as NSNumber
                 let thumbnailStorageRef = storageRef.child("videosThumbnails").child(uniqueID)
-                uploadImage(originalImage: thumbnail, imageStorageRef: thumbnailStorageRef) { (imageUrl) in
+                Networking.shared.uploadImage(originalImage: thumbnail, imageStorageRef: thumbnailStorageRef) { (imageUrl) in
                     thumbnailUrl = imageUrl
                 }
             }
@@ -132,7 +133,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
             let videoStorageRef = storageRef.child("videoMessages").child(uniqueID)
             metaData.contentType = "video/mp4"
             self.dismiss(animated: true, completion: nil)
-            let uploadTask = videoStorageRef.putFile(from: videoURL, metadata: metaData) { (StorageMetaData, err) in
+            videoStorageRef.putFile(from: videoURL, metadata: metaData) { (StorageMetaData, err) in
                 if err != nil {
                     print(err!)
                 } else {
@@ -142,74 +143,31 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
                         } else {
                             videoDownloadUrl = url?.absoluteString
                             let values : [String : Any] = ["videoDownloadUrl" : videoDownloadUrl ?? "", "thumbnailUrl" : thumbnailUrl ?? "", "imageWidth" : imageWidth ?? 0, "imageHeight" : imageHeight ?? 0]
-                            self.sendMessageWithProperties(properties: values)
+                            
+                            Networking.shared.sendMessageWithProperties(properties: values, toID: toID)
                         }
                     })
                 }
-            }
-            uploadTask.observe(.progress) { (snapShot) in
-                self.navigationItem.title = "\(ceil(100 * (snapShot.progress?.fractionCompleted)!))%"
-            }
-            uploadTask.observe(.success) { (snapShot) in
-                self.navigationItem.title = "\((self.userViewModel?.name)!)%"
             }
         } else {
             if let originalImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
                 
                 let imageStorageRef = storageRef.child("imageMessages").child(uniqueID)
-                uploadImage(originalImage: originalImage, imageStorageRef: imageStorageRef) { imageUrl in
+                
+                self.dismiss(animated: true, completion: nil)
+                
+                Networking.shared.uploadImage(originalImage: originalImage, imageStorageRef: imageStorageRef) { imageUrl in
+                    
                     let values = ["imageUrl" : imageUrl, "imageWidth" : originalImage.size.width, "imageHeight" : originalImage.size.height] as [String : Any]
-                    self.sendMessageWithProperties(properties: values)
+                    
+                    Networking.shared.sendMessageWithProperties(properties: values, toID: toID)
                 }
             }
         }
     }
     
     
-    
-    
-    fileprivate func uploadImage(originalImage: UIImage, imageStorageRef: StorageReference, comletionHandler: @escaping (String)->() ) {
-        self.dismiss(animated: true, completion: nil)
-        let metaData = StorageMetadata()
-        metaData.contentType = "image/jpeg"
-        
-        guard let imageData = originalImage.jpegData(compressionQuality: 0.5) else { return }
-        imageStorageRef.putData(imageData, metadata: metaData, completion: { (meta, error) in
-            if error != nil{
-                print(error!)
-            } else {
-                imageStorageRef.downloadURL(completion: { (url, error) in
-                    if error != nil {
-                        print(error!)
-                    } else {
-                        if let imageUrl = url?.absoluteString {
-                            comletionHandler(imageUrl)
-                            
-                        }
-                    }
-                })
-            }
-        })
-    }
-    
-    
-    func getThumbnailFromVideoURL(videoUrl : URL) -> UIImage? {
-        let assets = AVAsset(url: videoUrl)
-        let imageGenerator = AVAssetImageGenerator(asset: assets)
-        do {
-            let cgimage = try imageGenerator.copyCGImage(at: CMTime(value: 1, timescale: 60), actualTime: nil)
-            let uiImage = UIImage(cgImage: cgimage)
-            return uiImage
-        } catch {
-            print(error)
-        }
-        return nil
-    }
-    
-    
-    
-
-    
+    //MARK:- ViewController lifecycle methods
     override func viewDidLoad() {
         
         super.viewDidLoad()
@@ -220,6 +178,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         addKeyboardDismessGesture()
     }
     
+    
     fileprivate func prepareCollectionView() {
         collectionView?.backgroundColor = .white
         collectionView?.register(ChatCell.self, forCellWithReuseIdentifier: "cellID")
@@ -227,7 +186,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
         collectionView?.keyboardDismissMode = .interactive
     }
-    
     
     
     func timeObserverForAvPlayer(completionHandler : @escaping ((Float) -> ())){
@@ -242,6 +200,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
             
         })
     }
+    
     
     func removePeriodicTimeObserver() {
         if let token = timeObserverToken {
@@ -264,16 +223,15 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
                 let indexPath = IndexPath(item: self.messagesViewModelArray.count - 1, section: 0)
                 self.collectionView?.scrollToItem(at: indexPath, at: .bottom, animated: true)
             }
-            
         }
-        
     }
     
     
     @objc func handleSend() {
         if let message = inputsContainerView.messageTextField.text, message.count > 0 {
             let value = ["text" : message ] as [String : Any]
-            sendMessageWithProperties(properties: value)
+            guard let toID = userViewModel?.id else { return }
+            Networking.shared.sendMessageWithProperties(properties: value, toID: toID)
             hideSendButton()
         }
         self.inputsContainerView.messageTextField.text = nil
@@ -285,32 +243,21 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         collectionView.addGestureRecognizer(gesture)
     }
     
+    
     @objc fileprivate func dismissKeyboard() {
         print("try")
         inputAccessoryView?.endEditing(true)
     }
     
-    func sendMessageWithProperties(properties : [String : Any]) {
-        let messageRef = Firebase.Database.database().reference().child("messages").childByAutoId()
-        guard let fromID = Auth.auth().currentUser?.uid else { return }
-        guard let toID = userViewModel?.id else { return }
-        var values : [String : Any] = ["fromID" : fromID, "date" : Int(Date().timeIntervalSince1970), "toID" : toID]
-        properties.forEach { (arg) in
-            let (key, value) = arg
-            values[key] = value
-        }
-        messageRef.updateChildValues(values) { (error, ref) in
-            if let fromID = Auth.auth().currentUser?.uid, let toID = self.userViewModel?.id {
-                let senderMesssageRef = Firebase.Database.database().reference().child("user-messages").child(fromID).child(toID)
-                let messagesKey = [messageRef.key : 1]
-                senderMesssageRef.updateChildValues(messagesKey)
-                let reciverMessageRef = Firebase.Database.database().reference().child("user-messages").child(toID).child(fromID)
-                reciverMessageRef.updateChildValues(messagesKey)
-            }
-        }
+    
+    @objc private func handleBackButton() {
+        navigationController?.popViewController(animated: true)
+        avPlayerLayer?.removeFromSuperlayer()
+        avPlayer.pause()
     }
     
     
+    //MARK:- CollectionView DataSource and Delegate Methods
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
         let messageVM = messagesViewModelArray[indexPath.row]
@@ -475,14 +422,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
                 })
             }
         }
-    }
-
-    
-    @objc private func handleBackButton() {
-        navigationController?.popViewController(animated: true)
-        avPlayerLayer?.removeFromSuperlayer()
-        avPlayer.pause()
-        
     }
 
     

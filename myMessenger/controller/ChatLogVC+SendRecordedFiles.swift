@@ -83,6 +83,7 @@ extension ChatLogViewController :  AVAudioRecorderDelegate {
     func uploadAudioFile(url : URL) {
         let audioID = UUID().uuidString
         var audioURL : String?
+        guard let toID = userViewModel?.id else { return }
         let storageRef = Firebase.Storage.storage().reference().child("AudioFiles").child(audioID).child("record.m4a")
         
         let metaData = StorageMetadata()
@@ -92,7 +93,7 @@ extension ChatLogViewController :  AVAudioRecorderDelegate {
                 storageRef.downloadURL(completion: { (url, err) in
                         audioURL = url?.absoluteString
                     let values = ["audioUrl" : audioURL ?? ""] as [String : Any]
-                        self.sendMessageWithProperties(properties: values)
+                    Networking.shared.sendMessageWithProperties(properties: values, toID: toID)
                 })
             }
         }

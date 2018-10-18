@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "myMessenger/controller/ChatLogViewController.swift"
-            timestampString = "561463530.3586971"
+            timestampString = "561538754.431548"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "234"
-            endingLineNumber = "234"
+            startingLineNumber = "192"
+            endingLineNumber = "192"
             landmarkName = "timeObserverForAvPlayer(completionHandler:)"
             landmarkType = "7">
          </BreakpointContent>

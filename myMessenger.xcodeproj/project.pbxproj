@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1300FDD321783CFA00010494 /* URLExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1300FDD221783CFA00010494 /* URLExtension.swift */; };
+		1300FDDB2178655B00010494 /* myMessengerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1300FDDA2178655B00010494 /* myMessengerUITests.swift */; };
 		132DAD012177109800011A28 /* CustomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132DAD002177109800011A28 /* CustomView.swift */; };
 		132DAD0321773E9800011A28 /* UIColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132DAD0221773E9800011A28 /* UIColorExtension.swift */; };
 		132DAD0521773ECD00011A28 /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132DAD0421773ECD00011A28 /* CustomTextField.swift */; };
@@ -34,8 +36,22 @@
 		C4D56BC72103B55C002D6681 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4D56BC62103B55C002D6681 /* User.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		1300FDDD2178655B00010494 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C46390BA20FA19E800E4EA37 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C46390C120FA19E800E4EA37;
+			remoteInfo = myMessenger;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		015980BE09558866EE76C60F /* Pods_myMessenger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_myMessenger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1300FDD221783CFA00010494 /* URLExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLExtension.swift; sourceTree = "<group>"; };
+		1300FDD82178655B00010494 /* myMessengerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = myMessengerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1300FDDA2178655B00010494 /* myMessengerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = myMessengerUITests.swift; sourceTree = "<group>"; };
+		1300FDDC2178655B00010494 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		132DAD002177109800011A28 /* CustomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomView.swift; sourceTree = "<group>"; };
 		132DAD0221773E9800011A28 /* UIColorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorExtension.swift; sourceTree = "<group>"; };
 		132DAD0421773ECD00011A28 /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
@@ -67,6 +83,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1300FDD52178655B00010494 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C46390BF20FA19E800E4EA37 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -78,6 +101,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1300FDD92178655B00010494 /* myMessengerUITests */ = {
+			isa = PBXGroup;
+			children = (
+				1300FDDA2178655B00010494 /* myMessengerUITests.swift */,
+				1300FDDC2178655B00010494 /* Info.plist */,
+			);
+			path = myMessengerUITests;
+			sourceTree = "<group>";
+		};
 		262E2C7074B64C4CC89C7330 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -108,6 +140,7 @@
 			isa = PBXGroup;
 			children = (
 				C46390C420FA19E800E4EA37 /* myMessenger */,
+				1300FDD92178655B00010494 /* myMessengerUITests */,
 				C46390C320FA19E800E4EA37 /* Products */,
 				9A42A04DD655E0A427398346 /* Pods */,
 				262E2C7074B64C4CC89C7330 /* Frameworks */,
@@ -118,6 +151,7 @@
 			isa = PBXGroup;
 			children = (
 				C46390C220FA19E800E4EA37 /* myMessenger.app */,
+				1300FDD82178655B00010494 /* myMessengerUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -165,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				132DAD0221773E9800011A28 /* UIColorExtension.swift */,
+				1300FDD221783CFA00010494 /* URLExtension.swift */,
 				133732B821736532001B7FDF /* UIViewExtension.swift */,
 			);
 			path = helper;
@@ -188,6 +223,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		1300FDD72178655B00010494 /* myMessengerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1300FDDF2178655B00010494 /* Build configuration list for PBXNativeTarget "myMessengerUITests" */;
+			buildPhases = (
+				1300FDD42178655B00010494 /* Sources */,
+				1300FDD52178655B00010494 /* Frameworks */,
+				1300FDD62178655B00010494 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1300FDDE2178655B00010494 /* PBXTargetDependency */,
+			);
+			name = myMessengerUITests;
+			productName = myMessengerUITests;
+			productReference = 1300FDD82178655B00010494 /* myMessengerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		C46390C120FA19E800E4EA37 /* myMessenger */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C46390D420FA19F500E4EA37 /* Build configuration list for PBXNativeTarget "myMessenger" */;
@@ -213,10 +266,14 @@
 		C46390BA20FA19E800E4EA37 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0930;
+				LastSwiftUpdateCheck = 1000;
 				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "Ahmed Mokhtar";
 				TargetAttributes = {
+					1300FDD72178655B00010494 = {
+						CreatedOnToolsVersion = 10.0;
+						TestTargetID = C46390C120FA19E800E4EA37;
+					};
 					C46390C120FA19E800E4EA37 = {
 						CreatedOnToolsVersion = 9.3.1;
 						LastSwiftMigration = 1000;
@@ -237,11 +294,19 @@
 			projectRoot = "";
 			targets = (
 				C46390C120FA19E800E4EA37 /* myMessenger */,
+				1300FDD72178655B00010494 /* myMessengerUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1300FDD62178655B00010494 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C46390C020FA19E800E4EA37 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -301,6 +366,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1300FDD42178655B00010494 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1300FDDB2178655B00010494 /* myMessengerUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C46390BE20FA19E800E4EA37 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -321,6 +394,7 @@
 				C44B44E321047418008BED69 /* LoginLogoutViewController+Handlers.swift in Sources */,
 				C46823712115718700DBDBC5 /* ChatCell.swift in Sources */,
 				C45BE3B820FAF6EB003706B5 /* LoginLogoutViewController.swift in Sources */,
+				1300FDD321783CFA00010494 /* URLExtension.swift in Sources */,
 				C46F9E412110233C00C869D2 /* Message.swift in Sources */,
 				C46390C620FA19E800E4EA37 /* AppDelegate.swift in Sources */,
 				C409411A21117EB700A190CF /* UserCell.swift in Sources */,
@@ -332,7 +406,58 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		1300FDDE2178655B00010494 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C46390C120FA19E800E4EA37 /* myMessenger */;
+			targetProxy = 1300FDDD2178655B00010494 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		1300FDE02178655B00010494 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 367PS26QNX;
+				INFOPLIST_FILE = myMessengerUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mekha.myMessengerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = myMessenger;
+			};
+			name = Debug;
+		};
+		1300FDE12178655B00010494 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 367PS26QNX;
+				INFOPLIST_FILE = myMessengerUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mekha.myMessengerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = myMessenger;
+			};
+			name = Release;
+		};
 		C46390D220FA19F500E4EA37 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -488,6 +613,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1300FDDF2178655B00010494 /* Build configuration list for PBXNativeTarget "myMessengerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1300FDE02178655B00010494 /* Debug */,
+				1300FDE12178655B00010494 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C46390BD20FA19E800E4EA37 /* Build configuration list for PBXProject "myMessenger" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

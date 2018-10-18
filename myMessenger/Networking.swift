@@ -55,4 +55,52 @@ class Networking {
             })
         }, withCancel: nil)
     }
+    
+    
+    
+    
+    func uploadImage(originalImage: UIImage, imageStorageRef: StorageReference, comletionHandler: @escaping (String)->() ) {
+        
+        let metaData = StorageMetadata()
+        metaData.contentType = "image/jpeg"
+        
+        guard let imageData = originalImage.jpegData(compressionQuality: 0.5) else { return }
+        imageStorageRef.putData(imageData, metadata: metaData, completion: { (meta, error) in
+            if error != nil{
+                print(error!)
+            } else {
+                imageStorageRef.downloadURL(completion: { (url, error) in
+                    if error != nil {
+                        print(error!)
+                    } else {
+                        if let imageUrl = url?.absoluteString {
+                            comletionHandler(imageUrl)
+                            
+                        }
+                    }
+                })
+            }
+        })
+    }
+    
+    
+    func sendMessageWithProperties(properties : [String : Any], toID: String) {
+        let messageRef = Firebase.Database.database().reference().child("messages").childByAutoId()
+        guard let fromID = Auth.auth().currentUser?.uid else { return }
+        
+        var values : [String : Any] = ["fromID" : fromID, "date" : Int(Date().timeIntervalSince1970), "toID" : toID]
+        properties.forEach { (arg) in
+            let (key, value) = arg
+            values[key] = value
+        }
+        messageRef.updateChildValues(values) { (error, ref) in
+            if let fromID = Auth.auth().currentUser?.uid {
+                let senderMesssageRef = Firebase.Database.database().reference().child("user-messages").child(fromID).child(toID)
+                let messagesKey = [messageRef.key : 1]
+                senderMesssageRef.updateChildValues(messagesKey)
+                let reciverMessageRef = Firebase.Database.database().reference().child("user-messages").child(toID).child(fromID)
+                reciverMessageRef.updateChildValues(messagesKey)
+            }
+        }
+    }
 }
