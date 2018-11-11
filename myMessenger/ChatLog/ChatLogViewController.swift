@@ -8,27 +8,23 @@
 
 
 import UIKit
-import Firebase
 import MobileCoreServices
-import AVKit
 import SDWebImage
 
 
-
-class ChatLogViewController : UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate , UINavigationControllerDelegate {
+class ChatLogViewController : UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate , UINavigationControllerDelegate, ChatLogPresenterDelegate {
     
-    var userViewModel : UserViewModel? {
-        didSet{
-            let titleView = NavigationBarTitleView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-            if let url = userViewModel?.userProfileImageUrl {
-                titleView.profileImageView.sd_setImage(with: url, completed: nil)
-            }
-            titleView.titleLabel.text = userViewModel?.name
-            navigationItem.titleView = titleView
+    var presenter : ChatLogPresenter!
+    
+    func setupTitleView(userViewModel: UserViewModel) {
+        let titleView = NavigationBarTitleView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        if let url = userViewModel.userProfileImageUrl {
+            titleView.profileImageView.sd_setImage(with: url, completed: nil)
         }
+        titleView.titleLabel.text = userViewModel.name
+        navigationItem.titleView = titleView
     }
     
-    var messagesViewModelArray : [MessageViewModel] = []
     
     //MARK:- Setting up inputAccessoryView
     lazy var inputsContainerView : ChatInputsContainerView = {
@@ -64,19 +60,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     }
     
     //MARK:- AVKit dependent Properties
-    var avPlayer : AVPlayer = {
-        let player = AVPlayer()
-        player.automaticallyWaitsToMinimizeStalling = false
-        return player
-    }()
-    var avPlayerLayer : AVPlayerLayer?
-    var isRecording = false
-    let avAudioSession = AVAudioSession.sharedInstance()
-    let documentDirPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-    var audioRecordr : AVAudioRecorder?
-    var avPlayerAssets : AVAsset?
-    var timeObserverToken : Any?
-    var isRecoreding : Bool = false
+    
     
     //MARK:- these constrain used to animate inputsContainer View Buttons
     lazy var recordingButtonNewWidthAnchor : NSLayoutConstraint? = inputsContainerView.recordingButoon.widthAnchor.constraint(equalToConstant: 0)
@@ -106,62 +90,21 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         present(imagePicker, animated: true, completion: nil)
     }
     
+    func dismiss() {
+        DispatchQueue.main.async {
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         // Local variable inserted by Swift 4.2 migrator.
         let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
-        let uniqueID = NSUUID().uuidString
-        let storageRef = Firebase.Storage.storage().reference()
-        let metaData = StorageMetadata()
-        var thumbnailUrl : String?
-        var videoDownloadUrl : String?
-        var imageWidth : NSNumber?
-        var imageHeight : NSNumber?
-        guard let toID = self.userViewModel?.id else { return }
-        
         if let videoURL = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.mediaURL)] as? URL{
+            presenter.uploadVideo(videoURL: videoURL)
             
-            if let thumbnail = videoURL.getThumbnailFromVideoURL() {
-                imageWidth = thumbnail.size.width as NSNumber
-                imageHeight = thumbnail.size.height as NSNumber
-                let thumbnailStorageRef = storageRef.child("videosThumbnails").child(uniqueID)
-                Networking.shared.uploadImage(originalImage: thumbnail, imageStorageRef: thumbnailStorageRef) { (imageUrl) in
-                    thumbnailUrl = imageUrl
-                }
-            }
-            
-            let videoStorageRef = storageRef.child("videoMessages").child(uniqueID)
-            metaData.contentType = "video/mp4"
-            self.dismiss(animated: true, completion: nil)
-            videoStorageRef.putFile(from: videoURL, metadata: metaData) { (StorageMetaData, err) in
-                if err != nil {
-                    print(err!)
-                } else {
-                    videoStorageRef.downloadURL(completion: { (url, error) in
-                        if error != nil {
-                            print(error!)
-                        } else {
-                            videoDownloadUrl = url?.absoluteString
-                            let values : [String : Any] = ["videoDownloadUrl" : videoDownloadUrl ?? "", "thumbnailUrl" : thumbnailUrl ?? "", "imageWidth" : imageWidth ?? 0, "imageHeight" : imageHeight ?? 0]
-                            
-                            Networking.shared.sendMessageWithProperties(properties: values, toID: toID)
-                        }
-                    })
-                }
-            }
         } else {
             if let originalImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
-                
-                let imageStorageRef = storageRef.child("imageMessages").child(uniqueID)
-                
-                self.dismiss(animated: true, completion: nil)
-                
-                Networking.shared.uploadImage(originalImage: originalImage, imageStorageRef: imageStorageRef) { imageUrl in
-                    
-                    let values = ["imageUrl" : imageUrl, "imageWidth" : originalImage.size.width, "imageHeight" : originalImage.size.height] as [String : Any]
-                    
-                    Networking.shared.sendMessageWithProperties(properties: values, toID: toID)
-                }
+               presenter.uploadPhotos(originalImage: originalImage)
             }
         }
     }
@@ -171,7 +114,8 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        
+        presenter.delegate = self
+        setupTitleView(userViewModel: presenter.userViewModel)
         let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(handleBackButton))
         navigationItem.leftBarButtonItem = backButton
         prepareCollectionView()
@@ -188,41 +132,28 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     }
     
     
-    func timeObserverForAvPlayer(completionHandler : @escaping ((Float) -> ())){
-        let interval = CMTimeMake(value: 1, timescale: 24)
-        timeObserverToken = avPlayer.addPeriodicTimeObserver(forInterval: interval, queue: DispatchQueue.main, using: { time in
-            if let currentItem = self.avPlayer.currentItem {
-                let duration = CMTimeGetSeconds(currentItem.duration).isNaN ? 1 : CMTimeGetSeconds(currentItem.duration)
-                let currentTime = CMTimeGetSeconds((self.avPlayer.currentTime()))
-                let percentage = Float(currentTime/duration)
-                completionHandler(percentage)
-            }
-            
-        })
-    }
+        
     
     
-    func removePeriodicTimeObserver() {
-        if let token = timeObserverToken {
-            avPlayer.removeTimeObserver(token)
-            timeObserverToken = nil
+
+    func reloadCollectionView() {
+        DispatchQueue.main.async {
+            self.collectionView?.reloadData()
+            let indexPath = IndexPath(item: self.presenter.messagesViewModelArray.count - 1, section: 0)
+            self.collectionView?.scrollToItem(at: indexPath, at: .bottom, animated: true)
         }
     }
-
     
-    func grabMessages() {
-        guard let toID = userViewModel?.id else { return }
-        Networking.shared.grabPartnerMessagesLog(partnerID: toID) { (messageVM) in
-            
-            if self.userViewModel?.id == messageVM.partnerID {
-                    self.messagesViewModelArray.append(messageVM)
-                    self.messagesViewModelArray.sort(by: { return ($0.timeDoubleValue! < $1.timeDoubleValue!)})
-                }
-            DispatchQueue.main.async {
-                self.collectionView?.reloadData()
-                let indexPath = IndexPath(item: self.messagesViewModelArray.count - 1, section: 0)
-                self.collectionView?.scrollToItem(at: indexPath, at: .bottom, animated: true)
-            }
+    @objc func handelRecording() {
+        presenter.prepareAVAudioSession()
+        if presenter.isRecording {
+            presenter.stopRecoring()
+            inputsContainerView.recordingButoon.tintColor = .black
+            presenter.isRecording = false
+        } else {
+            presenter.startRecording()
+            inputsContainerView.recordingButoon.tintColor = .flatRed()
+            presenter.isRecording = true
         }
     }
     
@@ -230,7 +161,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     @objc func handleSend() {
         if let message = inputsContainerView.messageTextField.text, message.count > 0 {
             let value = ["text" : message ] as [String : Any]
-            guard let toID = userViewModel?.id else { return }
+            guard let toID = presenter.userViewModel?.id else { return }
             Networking.shared.sendMessageWithProperties(properties: value, toID: toID)
             hideSendButton()
         }
@@ -249,21 +180,24 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         inputAccessoryView?.endEditing(true)
     }
     
+    func present(controller: UIViewController) {
+        present(controller, animated: true) {
+            
+        }
+    }
     
     @objc private func handleBackButton() {
         navigationController?.popViewController(animated: true)
-        avPlayerLayer?.removeFromSuperlayer()
-        avPlayer.pause()
+//        avPlayer.pause()
     }
-    
     
     //MARK:- CollectionView DataSource and Delegate Methods
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        let messageVM = messagesViewModelArray[indexPath.row]
+        let messageVM = presenter.messagesViewModelArray[indexPath.row]
         if messageVM.isTextMessage {
             let height = messageVM.estimatHeightForText()?.height
-            return CGSize(width: view.frame.width, height: height! + 16)
+            return CGSize(width: view.frame.width, height: height! + 18)
         } else if messageVM.isAudioMessage {
             return CGSize(width: view.frame.width, height: 32)
         } else {
@@ -277,15 +211,15 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return messagesViewModelArray.count
+        return presenter.messagesViewModelArray.count
     }
     
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cellID", for: indexPath) as! ChatCell
-        cell.chatLogVC = self
-        let messageVM = messagesViewModelArray[indexPath.row]
+        let messageVM = presenter.messagesViewModelArray[indexPath.row]
         cell.messageVM = messageVM
+        cell.delegate = self
         setupCell(cell: cell, messageVM: messageVM)
         return cell
     }
@@ -310,24 +244,12 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
             if let url = messageVM.thumbnailUrl {
                 cell.chatImage.sd_setImage(with: url, placeholderImage: UIImage(named: "gray"))
             }
-            
             cell.chatImage.isHidden = false
             cell.playButton.isHidden = false
             cell.audioProgressView.isHidden = true
             cell.audioPlayButton.isHidden = true
             cell.bubbleViewWidthAnchor?.constant = 240
             cell.textView.isHidden = true
-            
-            cell.playVideoClosure = {
-                let controller = AVPlayerViewController()
-                controller.player = AVPlayer(url: messageVM.videoDownloadUrl!)
-                DispatchQueue.main.async {
-                    self.present(controller, animated: true) {
-                        controller.player?.play()
-                    }
-                }
-            }
-            
         } else if cell.messageVM?.isAudioMessage == true {
             cell.audioProgressView.isHidden = false
             cell.audioPlayButton.isHidden = false
@@ -338,31 +260,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
             cell.textView.isHidden = true
             cell.audioProgressView.progress = 0
             var isPlayingForTheFirstTime = true
-            
-            cell.playSoundClosure = { [weak self] in
-                if self?.avPlayer.timeControlStatus == .playing {
-                    cell.audioPlayButton.setImage(UIImage(named: "audioPlay"), for: .normal)
-                    self?.avPlayer.pause()
-                } else if self?.avPlayer . timeControlStatus == .paused{
-                    if isPlayingForTheFirstTime {
-                        let localPlayerItem = AVPlayerItem(url: messageVM.audioUrl!)
-                        self?.avPlayer.replaceCurrentItem(with: localPlayerItem)
-                        isPlayingForTheFirstTime = false
-                    }
-                    cell.audioPlayButton.setImage(UIImage(named: "pause"), for: .normal)
-                    self?.avPlayer.play()
-                    self?.removePeriodicTimeObserver()
-                    self?.timeObserverForAvPlayer(completionHandler: { (progress) in
-                        DispatchQueue.main.async {
-                            cell.audioProgressView.progress = progress
-                        }
-                    })
-                }
-            }
-            cell.stopSoundClosure = { [weak self] in
-                self?.avPlayer.pause()
-            }
-            
         } else {
             cell.audioProgressView.isHidden = true
             cell.audioPlayButton.isHidden = true
@@ -375,7 +272,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         }
         
         // Seting up the layout of the chat cell depending on weather the logged user is a sender or a reciever
-        if self.userViewModel?.id == messageVM.fromID {
+        if self.presenter.userViewModel?.id == messageVM.fromID {
             let color = UIColor(r: 240, g: 240, b: 240)
             cell.bubbleView.backgroundColor = color
             cell.bubViewleftAnchor?.isActive = true
@@ -387,7 +284,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
             cell.audioProgressView.trackTintColor = color
             cell.textView.textColor = UIColor.black
         } else {
-//            let color = UIColor(r: 0, g: 120, b: 254)
+            //let color = UIColor(r: 0, g: 120, b: 254)
             cell.bubbleView.backgroundColor = UIColor.flatGreen()
             cell.audioProgressView.progressTintColor = UIColor.flatGreenColorDark()
             cell.audioProgressView.trackTintColor = UIColor.flatGreen()
@@ -397,33 +294,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
             cell.textView.textColor = UIColor.white
         }
     }
-    
-    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let messageVM = messagesViewModelArray[indexPath.item]
-        if messageVM.isAudioMessage {
-            let cell = collectionView.cellForItem(at: indexPath) as! ChatCell
-            cell.isPlayingForTheFirstTime = true
-            if avPlayer.timeControlStatus == .playing {
-                cell.audioPlayButton.setImage(UIImage(named: "audioPlay"), for: .normal)
-                avPlayer.pause()
-            } else if avPlayer.timeControlStatus == .paused{
-                if cell.isPlayingForTheFirstTime {
-                    let localPlayerItem = AVPlayerItem(url: messageVM.audioUrl!)
-                    avPlayer.replaceCurrentItem(with: localPlayerItem)
-                    cell.isPlayingForTheFirstTime = false
-                }
-                cell.audioPlayButton.setImage(UIImage(named: "pause"), for: .normal)
-                avPlayer.play()
-                removePeriodicTimeObserver()
-                timeObserverForAvPlayer(completionHandler: { (progress) in
-                    DispatchQueue.main.async {
-                        cell.audioProgressView.progress = progress
-                    }
-                })
-            }
-        }
-    }
-
     
     var tappedImageFrame : CGRect?
     var blackBacground : UIView?
@@ -474,6 +344,21 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
 }
 
 
+extension ChatLogViewController : ChatCellDelegate {
+    func playVideo(for cell : ChatCell) {
+        presenter.indexPath = collectionView.indexPath(for: cell)
+        presenter.playVideoAtIndexPath()
+    }
+    
+    func playAudio(for cell : ChatCell) {
+        presenter.indexPath = collectionView.indexPath(for: cell)
+        presenter.playAudio()
+    }
+    
+    func stopAudio() {
+        
+    }
+}
 
 
 // Helper function inserted by Swift 4.2 migrator.
@@ -485,3 +370,5 @@ fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [U
 fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
 	return input.rawValue
 }
+
+

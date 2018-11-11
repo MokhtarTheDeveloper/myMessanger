@@ -7,10 +7,11 @@
 //
 
 import UIKit
-import Firebase
 import ChameleonFramework
 
-class LoginLogoutViewController: UIViewController, UITextFieldDelegate {
+class LoginLogoutViewController: UIViewController, UITextFieldDelegate, LoginLogoutDelegate {
+    
+    var presenter : LoginLogoutPresenter!
     
     lazy var scrollView : UIScrollView = {
         let scrView = UIScrollView(frame: self.view.frame)
@@ -135,15 +136,14 @@ class LoginLogoutViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        presenter.delegate = self
+        
         view.addSubview(scrollView)
         scrollView.addSubview(inputsContainerView)
         scrollView.addSubview(registerButton)
         scrollView.addSubview(userProfileImageView)
         scrollView.addSubview(segmantedController)
-        
         scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        
-        
         setUpinputsContainerView()
         setUpnameTextFieldConstraint()
         setUpFieldSperatorConstraint()
@@ -288,4 +288,69 @@ class LoginLogoutViewController: UIViewController, UITextFieldDelegate {
         return .lightContent
     }
 
+}
+
+
+extension LoginLogoutViewController : UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    var picker : UIImagePickerController {
+        let pc = UIImagePickerController()
+        pc.delegate = self
+        pc.sourceType = .photoLibrary
+        pc.allowsEditing = true
+        return pc
+    }
+    
+    @objc func handleProfileImagePicker() {
+        present(picker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        // Local variable inserted by Swift 4.2 migrator.
+        let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+        
+        if let editedImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.editedImage)] as? UIImage{
+            userProfileImageView.image = editedImage
+        } else {
+            if let originalImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
+                userProfileImageView.image = originalImage
+            }
+        }
+    }
+    
+    @objc func handelLoginLogout() {
+        if segmantedController.selectedSegmentIndex == 1 {
+            handleRegestiration()
+        } else{
+            handleLogin()
+        }
+    }
+    
+    
+    func handleLogin() {
+        guard let email = mailTextField.text, let password = passwordTextField.text else { return }
+        presenter.handleLogin(email: email, password: password)
+    }
+    
+    
+    func handleRegestiration() {
+        guard let email = mailTextField.text, let password = passwordTextField.text, let name = nameTextField.text else { return }
+        guard let imageData = self.userProfileImageView.image!.jpegData(compressionQuality: 0.9) else { return }
+        presenter.handleRegisteration(email: email, password: password, name: name, imageData: imageData)
+    }
+    
+    func dismiss() {
+        dismiss(animated: true, completion: nil)
+    }
+    
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+    return input.rawValue
 }

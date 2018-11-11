@@ -9,14 +9,16 @@
 import UIKit
 import AVFoundation
 
-protocol ChatCellDelegate {
-    func playSound(chatcell : ChatCell)
+protocol ChatCellDelegate : class {
+    func playVideo(for cell : ChatCell)
+    func playAudio(for cell : ChatCell)
+    func stopAudio()
 }
 
 class ChatCell : UICollectionViewCell {
     
     var messageVM : MessageViewModel?
-    var delegate : ChatCellDelegate?
+    weak var delegate : ChatCellDelegate?
     
     let textView : UITextView = {
         let tv = UITextView()
@@ -48,29 +50,20 @@ class ChatCell : UICollectionViewCell {
     }()
     
     
-    var playVideoClosure : (()->())?
-    var playSoundClosure : (()->())?
-    var stopSoundClosure : (()->())?
-    
-    
     @objc func playVideo() {
-        playVideoClosure?()
+        delegate?.playVideo(for: self)
     }
     
     @objc func handlePlayButton() {
-        playSoundClosure?()
+        delegate?.playAudio(for: self)
     }
 
-    
-    
     override func prepareForReuse() {
         super.prepareForReuse()
         self.chatImage.image = nil
-        stopSoundClosure?()
+        delegate?.stopAudio()
     }
     
-    
-    var chatLogVC : ChatLogViewController?
     
     let bubbleView : UIView = {
         let bubView = UIView()
@@ -124,14 +117,14 @@ class ChatCell : UICollectionViewCell {
     
     @objc private func handleZomingImage() {
         
-        if messageVM?.videoDownloadUrl != nil {
-            return
-        }
-        let tappedImageView = chatImage
-        
-        if let VC = chatLogVC {
-            VC.handleZomingImageWithImageView(tappedImageView: tappedImageView)
-        }
+//        if messageVM?.videoDownloadUrl != nil {
+//            return
+//        }
+//        let tappedImageView = chatImage
+//        
+//        if let VC = chatLogVC {
+//            VC.handleZomingImageWithImageView(tappedImageView: tappedImageView)
+//        }
     }
     
     override var isSelected: Bool {

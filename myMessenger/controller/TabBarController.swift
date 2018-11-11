@@ -20,8 +20,13 @@ class TabBarController: UITabBarController {
         tabBar.tintColor = .flatGreen()
         guard let speechBubble = UIImage(named: "speech-bubble") else { return }
         guard let contacts = UIImage(named: "contacts") else { return }
-        viewControllers = [setUpViewControllers(viewController: MessagesViewController(), title: "Chats", image: speechBubble), setUpViewControllers(viewController: NewMessageController(), title: "Contacts", image: contacts)]
+        let recent = RecentMessagesViewController()
+        recent.presenter = RecentMessagesViewPresenter()
         
+        let contactVC = ContactsController()
+        contactVC.presenter = ContactPresenter()
+        
+        viewControllers = [setUpViewControllers(viewController: recent, title: "Chats", image: speechBubble), setUpViewControllers(viewController: contactVC, title: "Contacts", image: contacts)]
     }
     
     

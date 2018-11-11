@@ -7,21 +7,8 @@
 //
 
 import UIKit
-import Firebase
 
 class UserCell : UITableViewCell {
-    
-    var messageModelView: MessageViewModel? {
-        didSet{
-            self.textLabel?.text = messageModelView?.partnerName
-            self.detailTextLabel?.text = messageModelView?.messageText
-            if let url = messageModelView?.partnerImageURL {
-                self.profileImageView.sd_setImage(with: url, completed: nil)
-            }
-            self.timeLabel.text = messageModelView?.timeText
-        }
-    }
-
     
     var profileImageView : UIImageView = {
         let imgView = UIImageView()

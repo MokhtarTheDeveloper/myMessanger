@@ -10,10 +10,7 @@ import UIKit
 
 extension ChatLogViewController: UITextFieldDelegate {
     
-    
-    
     fileprivate func animateButtons(text: String, range : NSRange) {
-
         if (previousRange == nil ) || ( range.location > 0 ) || (range.location == 0 && previousRange?.location == 0 && previousPreviousRange?.location == 0){
             showSendButton()
         } else {
@@ -22,12 +19,10 @@ extension ChatLogViewController: UITextFieldDelegate {
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-
         guard let text = textField.text else { return true }
         animateButtons(text: text, range: range)
         previousPreviousRange = previousRange
         previousRange = range
-        
         return true
     }
     
