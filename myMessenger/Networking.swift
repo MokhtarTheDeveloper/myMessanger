@@ -42,7 +42,7 @@ class Networking {
     }
     
     
-    func grabPartnerMessagesLog(partnerID : String, completionHandler : @escaping ((MessageViewModel) -> ())) {
+    func grabPartnerMessagesLog(partnerID : String, completionHandler : @escaping ((Message) -> ())) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let userMessagesRef = mainDatabaseRefrence.child("user-messages").child(uid).child(partnerID)
         userMessagesRef.observe(.childAdded, with: { (snapShot) in
@@ -50,7 +50,7 @@ class Networking {
             let messageRef = self.mainDatabaseRefrence.child("messages").child(messageID)
             messageRef.observeSingleEvent(of: .value, with: { (dataSnap) in
                 let dict = dataSnap.value as! [String : Any]
-                let messageVM = MessageViewModel(message: Message(dictionary: dict))
+                let messageVM = Message(dictionary: dict)
                 completionHandler(messageVM)
             })
         }, withCancel: nil)

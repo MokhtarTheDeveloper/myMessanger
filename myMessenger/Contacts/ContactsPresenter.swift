@@ -16,16 +16,15 @@ protocol ContactPresenterDelegate :class {
 class ContactPresenter {
     weak var delegate : ContactPresenterDelegate?
     let ref = Firebase.Database.database().reference().child("user")
-    var usersViewModelArray = [UserViewModel]()
+    var usersArray = [User]()
     
     func fetchData() {
         ref.observe(.childAdded, with: { (dataSnap) in
             guard let dictionary = dataSnap.value as? [String : AnyObject] else { return }
             let id = dataSnap.key
             let user = User(dictionary: dictionary, id: id)
-            let userVM = UserViewModel(user: user)
             if Auth.auth().currentUser?.uid != id{
-                self.usersViewModelArray.append(userVM)
+                self.usersArray.append(user)
                 self.delegate?.reloadTableView()
             }
         }) { (error) in

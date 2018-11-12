@@ -12,18 +12,20 @@ import AVKit
 
 
 protocol ChatLogPresenterDelegate: class {
-    func setupTitleView(userViewModel: UserViewModel)
+    func setupTitleView(user: User)
     func reloadCollectionView()
     func dismiss()
     func present(controller: UIViewController)
+    func setAudioProgressBar(percentage: Float)
+    func setUpAudioPlayButton(isPlaying: Bool)
 }
 
 class ChatLogPresenter: NSObject {
     
     weak var delegate: ChatLogPresenterDelegate?
     let storageRef = Firebase.Storage.storage().reference()
-    var messagesViewModelArray : [MessageViewModel] = []
-    var userViewModel : UserViewModel!
+    var messagesViewModelArray : [Message] = []
+    var user : User!
     let avAudioSession = AVAudioSession.sharedInstance()
     let documentDirPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     var audioRecordr : AVAudioRecorder?
@@ -36,12 +38,12 @@ class ChatLogPresenter: NSObject {
     var avPlayerAssets : AVAsset?
     var timeObserverToken : Any?
     var indexPath : IndexPath?
-    
+    var progress : Float?
 
     func grabMessages() {
-        guard let toID = userViewModel?.id else { return }
+        guard let toID = user?.id else { return }
         Networking.shared.grabPartnerMessagesLog(partnerID: toID) { (messageVM) in
-            if self.userViewModel?.id == messageVM.partnerID {
+            if self.user?.id == messageVM.partnerID {
                 self.messagesViewModelArray.append(messageVM)
                 self.messagesViewModelArray.sort(by: { return ($0.timeDoubleValue! < $1.timeDoubleValue!)})
             }
@@ -57,7 +59,7 @@ class ChatLogPresenter: NSObject {
         var videoDownloadUrl : String?
         var imageWidth : NSNumber?
         var imageHeight : NSNumber?
-        guard let toID = userViewModel.id else { return }
+        guard let toID = user.id else { return }
 
         if let thumbnail = videoURL.getThumbnailFromVideoURL() {
             imageWidth = thumbnail.size.width as NSNumber
@@ -90,7 +92,7 @@ class ChatLogPresenter: NSObject {
     
     
     func uploadPhotos(originalImage : UIImage) {
-        guard let toID = userViewModel.id else { return }
+        guard let toID = user.id else { return }
         let uniqueID = NSUUID().uuidString
         let imageStorageRef = storageRef.child("imageMessages").child(uniqueID)
         delegate?.dismiss()
@@ -105,7 +107,7 @@ class ChatLogPresenter: NSObject {
     func uploadAudioFile(url : URL) {
         let audioID = UUID().uuidString
         var audioURL : String?
-        guard let toID = userViewModel?.id else { return }
+        guard let toID = user?.id else { return }
         let storageRef = Firebase.Storage.storage().reference().child("AudioFiles").child(audioID).child("record.m4a")
         
         let metaData = StorageMetadata()
@@ -205,22 +207,18 @@ extension ChatLogPresenter : AVAudioRecorderDelegate {
     }
     
     func playAudio() {
+        
         if avPlayer.timeControlStatus == .playing {
-//            cell.audioPlayButton.setImage(UIImage(named: "audioPlay"), for: .normal)
+            delegate?.setUpAudioPlayButton(isPlaying: true)
             avPlayer.pause()
         } else if avPlayer . timeControlStatus == .paused{
-//            if isPlayingForTheFirstTime {
             let localPlayerItem = AVPlayerItem(url: messagesViewModelArray[(indexPath?.item)!].audioUrl!)
                 avPlayer.replaceCurrentItem(with: localPlayerItem)
-//                isPlayingForTheFirstTime = false
-//            }
-//            cell.audioPlayButton.setImage(UIImage(named: "pause"), for: .normal)
+            delegate?.setUpAudioPlayButton(isPlaying: false)
             avPlayer.play()
             removePeriodicTimeObserver()
             timeObserverForAvPlayer(completionHandler: { (progress) in
-//                DispatchQueue.main.async {
-//                    cell.audioProgressView.progress = progress
-//                }
+                self.delegate?.setAudioProgressBar(percentage: progress)
             })
         }
     }

@@ -11,7 +11,7 @@ import Foundation
 class User: NSObject{
     var mail : String?
     var name : String?
-    var profileImageURL : String?
+    var profileImageURL : URL?
     var id : String?
     
     
@@ -19,7 +19,9 @@ class User: NSObject{
         super.init()
         self.mail = dictionary["mail"] as? String
         self.name = dictionary["name"] as? String
-        self.profileImageURL = dictionary["imageUrl"] as? String
+        if let profileImageURLString = dictionary["imageUrl"] as? String {
+            self.profileImageURL = URL(string: profileImageURLString)
+        }
         self.id = id
     }
     

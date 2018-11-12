@@ -12,20 +12,10 @@ import MobileCoreServices
 import SDWebImage
 
 
-class ChatLogViewController : UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate , UINavigationControllerDelegate, ChatLogPresenterDelegate {
+class ChatLogViewController : UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate , UINavigationControllerDelegate {
     
     var presenter : ChatLogPresenter!
-    
-    func setupTitleView(userViewModel: UserViewModel) {
-        let titleView = NavigationBarTitleView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-        if let url = userViewModel.userProfileImageUrl {
-            titleView.profileImageView.sd_setImage(with: url, completed: nil)
-        }
-        titleView.titleLabel.text = userViewModel.name
-        navigationItem.titleView = titleView
-    }
-    
-    
+    var activeCell : ChatCell?
     //MARK:- Setting up inputAccessoryView
     lazy var inputsContainerView : ChatInputsContainerView = {
         let view = ChatInputsContainerView()
@@ -35,7 +25,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     }()
     
     var _inputAccessoryView : UIView!
-    
     override var inputAccessoryView: UIView? {
         get {
             if _inputAccessoryView == nil {
@@ -48,20 +37,14 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
                 inputsContainerView.leftAnchor.constraint(equalTo: _inputAccessoryView.safeAreaLayoutGuide.leftAnchor, constant: 0).isActive = true
                 inputsContainerView.rightAnchor.constraint(equalTo: _inputAccessoryView.safeAreaLayoutGuide.rightAnchor, constant: 0).isActive = true
                 inputsContainerView.heightAnchor.constraint(equalTo: _inputAccessoryView.safeAreaLayoutGuide.heightAnchor).isActive = true
-                
             }
             return _inputAccessoryView
         }
     }
     
-    
     override var canBecomeFirstResponder: Bool {
         return true
     }
-    
-    //MARK:- AVKit dependent Properties
-    
-    
     //MARK:- these constrain used to animate inputsContainer View Buttons
     lazy var recordingButtonNewWidthAnchor : NSLayoutConstraint? = inputsContainerView.recordingButoon.widthAnchor.constraint(equalToConstant: 0)
     lazy var cameraButtonNewWidthAnchor : NSLayoutConstraint? = inputsContainerView.cameraButton.widthAnchor.constraint(equalToConstant: 0)
@@ -69,8 +52,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     var charactersCountForTextFiled: Int?
     var previousRange : NSRange?
     var previousPreviousRange : NSRange?
-    
-    
     //MARK:- Sending photos and videos
     lazy var imagePicker : UIImagePickerController = {
         let picker = UIImagePickerController()
@@ -78,7 +59,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         picker.mediaTypes = [kUTTypeImage, kUTTypeMovie] as [String]
         return picker
     }()
-    
     
     @objc func pickImageFromPhotoLibrary() {
         imagePicker.sourceType = .photoLibrary
@@ -88,12 +68,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     @objc func takeAPhoto() {
         imagePicker.sourceType = .camera
         present(imagePicker, animated: true, completion: nil)
-    }
-    
-    func dismiss() {
-        DispatchQueue.main.async {
-            self.dismiss(animated: true, completion: nil)
-        }
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -108,20 +82,17 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
             }
         }
     }
-    
-    
+
     //MARK:- ViewController lifecycle methods
     override func viewDidLoad() {
-        
         super.viewDidLoad()
         presenter.delegate = self
-        setupTitleView(userViewModel: presenter.userViewModel)
+        setupTitleView(user: presenter.user)
         let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(handleBackButton))
         navigationItem.leftBarButtonItem = backButton
         prepareCollectionView()
         addKeyboardDismessGesture()
     }
-    
     
     fileprivate func prepareCollectionView() {
         collectionView?.backgroundColor = .white
@@ -129,19 +100,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         collectionView?.bounces = true
         collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
         collectionView?.keyboardDismissMode = .interactive
-    }
-    
-    
-        
-    
-    
-
-    func reloadCollectionView() {
-        DispatchQueue.main.async {
-            self.collectionView?.reloadData()
-            let indexPath = IndexPath(item: self.presenter.messagesViewModelArray.count - 1, section: 0)
-            self.collectionView?.scrollToItem(at: indexPath, at: .bottom, animated: true)
-        }
     }
     
     @objc func handelRecording() {
@@ -157,33 +115,24 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         }
     }
     
-    
     @objc func handleSend() {
         if let message = inputsContainerView.messageTextField.text, message.count > 0 {
             let value = ["text" : message ] as [String : Any]
-            guard let toID = presenter.userViewModel?.id else { return }
+            guard let toID = presenter.user?.id else { return }
             Networking.shared.sendMessageWithProperties(properties: value, toID: toID)
             hideSendButton()
         }
         self.inputsContainerView.messageTextField.text = nil
     }
     
-    
     fileprivate func addKeyboardDismessGesture() {
         let gesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         collectionView.addGestureRecognizer(gesture)
     }
     
-    
     @objc fileprivate func dismissKeyboard() {
         print("try")
         inputAccessoryView?.endEditing(true)
-    }
-    
-    func present(controller: UIViewController) {
-        present(controller, animated: true) {
-            
-        }
     }
     
     @objc private func handleBackButton() {
@@ -209,23 +158,19 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         
     }
     
-    
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return presenter.messagesViewModelArray.count
     }
     
-
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cellID", for: indexPath) as! ChatCell
         let messageVM = presenter.messagesViewModelArray[indexPath.row]
-        cell.messageVM = messageVM
         cell.delegate = self
         setupCell(cell: cell, messageVM: messageVM)
         return cell
     }
 
-    
-    private func setupCell(cell: ChatCell, messageVM : MessageViewModel) {
+    private func setupCell(cell: ChatCell, messageVM : Message) {
 
         //seting up chat cell according to the type of the message
         
@@ -250,7 +195,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
             cell.audioPlayButton.isHidden = true
             cell.bubbleViewWidthAnchor?.constant = 240
             cell.textView.isHidden = true
-        } else if cell.messageVM?.isAudioMessage == true {
+        } else if messageVM.isAudioMessage {
             cell.audioProgressView.isHidden = false
             cell.audioPlayButton.isHidden = false
             cell.chatImage.isHidden = true
@@ -259,7 +204,6 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
             cell.bubbleViewWidthAnchor?.constant = 200
             cell.textView.isHidden = true
             cell.audioProgressView.progress = 0
-            var isPlayingForTheFirstTime = true
         } else {
             cell.audioProgressView.isHidden = true
             cell.audioPlayButton.isHidden = true
@@ -272,7 +216,7 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
         }
         
         // Seting up the layout of the chat cell depending on weather the logged user is a sender or a reciever
-        if self.presenter.userViewModel?.id == messageVM.fromID {
+        if self.presenter.user?.id == messageVM.fromID {
             let color = UIColor(r: 240, g: 240, b: 240)
             cell.bubbleView.backgroundColor = color
             cell.bubViewleftAnchor?.isActive = true
@@ -297,11 +241,12 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     
     var tappedImageFrame : CGRect?
     var blackBacground : UIView?
-    
-    
-    func handleZomingImageWithImageView(tappedImageView: UIImageView) {
-        let zomingImage = UIImageView(image: tappedImageView.image)
+    func handleZomingImageWithImageView(tappedImageView: UIImageView, cell: ChatCell) {
+        if let indexPath = collectionView.indexPath(for: cell), presenter.messagesViewModelArray[indexPath.item].videoDownloadUrl != nil {
+            return
+        }
         
+        let zomingImage = UIImageView(image: tappedImageView.image)
         tappedImageFrame = tappedImageView.superview?.convert(tappedImageView.frame, to: nil)
         zomingImage.frame = tappedImageFrame!
         let gesture = UIPanGestureRecognizer(target: self, action: #selector(zommingOut))
@@ -342,7 +287,54 @@ class ChatLogViewController : UICollectionViewController, UICollectionViewDelega
     
     
 }
+extension ChatLogViewController : ChatLogPresenterDelegate {
+    
+    func setupTitleView(user: User) {
+        let titleView = NavigationBarTitleView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        if let url = user.profileImageURL {
+            titleView.profileImageView.sd_setImage(with: url, completed: nil)
+        }
+        titleView.titleLabel.text = user.name
+        navigationItem.titleView = titleView
+    }
+    
+    func reloadCollectionView() {
+        DispatchQueue.main.async {
+            self.collectionView?.reloadData()
+            let indexPath = IndexPath(item: self.presenter.messagesViewModelArray.count - 1, section: 0)
+            self.collectionView?.scrollToItem(at: indexPath, at: .bottom, animated: true)
+        }
+    }
+    
+    func dismiss() {
+        DispatchQueue.main.async {
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    func present(controller: UIViewController) {
+        present(controller, animated: true) {
+            
+        }
+    }
+    
+    func setAudioProgressBar(percentage: Float) {
+        if let activeCell = activeCell {
+            activeCell.audioProgressView.progress = percentage
+        }
+    }
+    
+    func setUpAudioPlayButton(isPlaying: Bool) {
+        if let activeCell = activeCell {
+            if isPlaying {
+                activeCell.audioPlayButton.setImage(UIImage(named: "audioPlay"), for: .normal)
+            } else {
+                activeCell.audioPlayButton.setImage(UIImage(named: "pause"), for: .normal)
 
+            }
+        }
+    }
+}
 
 extension ChatLogViewController : ChatCellDelegate {
     func playVideo(for cell : ChatCell) {
@@ -351,6 +343,7 @@ extension ChatLogViewController : ChatCellDelegate {
     }
     
     func playAudio(for cell : ChatCell) {
+        activeCell = cell
         presenter.indexPath = collectionView.indexPath(for: cell)
         presenter.playAudio()
     }
@@ -358,6 +351,69 @@ extension ChatLogViewController : ChatCellDelegate {
     func stopAudio() {
         
     }
+}
+
+extension ChatLogViewController: UITextFieldDelegate {
+    
+    fileprivate func animateButtons(text: String, range : NSRange) {
+        if (previousRange == nil ) || ( range.location > 0 ) || (range.location == 0 && previousRange?.location == 0 && previousPreviousRange?.location == 0){
+            showSendButton()
+        } else {
+            hideSendButton()
+        }
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        guard let text = textField.text else { return true }
+        animateButtons(text: text, range: range)
+        previousPreviousRange = previousRange
+        previousRange = range
+        return true
+    }
+    
+    
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        print("should begin editing")
+        return true
+    }
+    
+    
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+        print("should end editing")
+        return true
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        return true
+    }
+    
+    
+    func showSendButton() {
+        inputsContainerView.cameraButtonWidthAnchor?.isActive = false
+        inputsContainerView.recordingButoonWidthAnchor?.isActive = false
+        recordingButtonNewWidthAnchor?.isActive = true
+        
+        cameraButtonNewWidthAnchor?.isActive = true
+        sendButtonNewWidthAnchor?.isActive = true
+        inputsContainerView.sendButtonWidthAnchor?.isActive = false
+        UIView.animate(withDuration: 0.2, animations: {
+            self.inputsContainerView.layoutIfNeeded()
+        })
+        
+    }
+    
+    func hideSendButton() {
+        inputsContainerView.cameraButtonWidthAnchor?.isActive = true
+        inputsContainerView.recordingButoonWidthAnchor?.isActive = true
+        inputsContainerView.sendButtonWidthAnchor?.isActive = true
+        cameraButtonNewWidthAnchor?.isActive = false
+        recordingButtonNewWidthAnchor?.isActive = false
+        sendButtonNewWidthAnchor?.isActive = false
+        UIView.animate(withDuration: 0.2) {
+            self.inputsContainerView.layoutIfNeeded()
+        }
+    }
+    
 }
 
 
@@ -370,5 +426,3 @@ fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [U
 fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
 	return input.rawValue
 }
-
-

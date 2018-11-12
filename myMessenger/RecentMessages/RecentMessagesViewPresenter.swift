@@ -13,15 +13,15 @@ import Firebase
     func setupBarView()
     func reloadTableView()
     @objc func handleLogout()
-    func presentChatLogWithUser(userVM: UserViewModel)
+    func presentChatLogWithUser(user: User)
 }
 
 class RecentMessagesViewPresenter {
     
     weak var recentMessagesPresenterDelegate : RecentMessagesPresenterDelegate?
     let databaseReference = Firebase.Database.database().reference()
-    var userViewModel : UserViewModel?
-    var messagesModelViewArray = [MessageViewModel]()
+    var user : User?
+    var messagesArray = [Message]()
     var timer : Timer?
     
     func checkIfUserIsLoggedIn() {
@@ -33,7 +33,7 @@ class RecentMessagesViewPresenter {
             
             Firebase.Database.database().reference().child("user").child(uid).observe(.value, with: { (dataSnap) in
                 if let dictionary = dataSnap.value as? [String : AnyObject]{
-                    self.userViewModel = UserViewModel(user: User(dictionary: dictionary, id: uid))
+                    self.user = User(dictionary: dictionary, id: uid)
                     self.recentMessagesPresenterDelegate?.setupBarView()
                 }
             }) { (error) in
@@ -43,10 +43,10 @@ class RecentMessagesViewPresenter {
     }
     
     func grabUserMessages() {
-        guard let uid = userViewModel?.id else { return }
+        guard let uid = user?.id else { return }
         Networking.shared.grabFriendsLatestMessages(uid: uid) { (messagesDict) in
-            self.messagesModelViewArray = Array(messagesDict.values).map({MessageViewModel(message: $0)})
-            self.messagesModelViewArray.sort(by: { (messageModelView1, messageModelView2) -> Bool in
+            self.messagesArray = Array(messagesDict.values)
+            self.messagesArray.sort(by: { (messageModelView1, messageModelView2) -> Bool in
                 return (messageModelView1.timeDoubleValue)! > (messageModelView2.timeDoubleValue)!
             })
             self.timer?.invalidate()
@@ -68,14 +68,13 @@ class RecentMessagesViewPresenter {
         recentMessagesPresenterDelegate?.reloadTableView()
     }
     
-    func a(messageModelView : MessageViewModel) {
+    func a(messageModelView : Message) {
         let userID = messageModelView.partnerID
         let ref = Firebase.Database.database().reference().child("user").child(userID!)
         ref.observeSingleEvent(of: .value, with: { (snapShot) in
             if let dict = snapShot.value as? [String : String] {
                 let user = User(dictionary: dict, id: userID)
-                let userVM = UserViewModel(user: user)
-                self.recentMessagesPresenterDelegate?.presentChatLogWithUser(userVM: userVM)
+                self.recentMessagesPresenterDelegate?.presentChatLogWithUser(user: user)
             }
         }, withCancel: nil)
     }

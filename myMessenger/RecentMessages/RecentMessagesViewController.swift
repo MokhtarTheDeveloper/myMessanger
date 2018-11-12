@@ -27,7 +27,7 @@ class RecentMessagesViewController: UITableViewController , RecentMessagesPresen
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cellID", for: indexPath) as! UserCell
-        let messageVM = presenter.messagesModelViewArray[indexPath.row]
+        let messageVM = presenter.messagesArray[indexPath.row]
         cell.textLabel?.text = messageVM.partnerName
         cell.detailTextLabel?.text = messageVM.messageText
         if let url = messageVM.partnerImageURL {
@@ -38,7 +38,7 @@ class RecentMessagesViewController: UITableViewController , RecentMessagesPresen
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return presenter.messagesModelViewArray.count
+        return presenter.messagesArray.count
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -46,30 +46,30 @@ class RecentMessagesViewController: UITableViewController , RecentMessagesPresen
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let messageModelView = presenter.messagesModelViewArray[indexPath.row]
+        let messageModelView = presenter.messagesArray[indexPath.row]
         presenter.a(messageModelView: messageModelView)
         
     }
     
     func setupBarView() {
-        presenter.messagesModelViewArray.removeAll()
+        presenter.messagesArray.removeAll()
         tableView.reloadData()
         presenter.grabUserMessages()
                 
         let titleView = NavigationBarTitleView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-        if let url = presenter.userViewModel?.userProfileImageUrl {
+        if let url = presenter.user?.profileImageURL {
             titleView.profileImageView.sd_setImage(with: url, completed: nil)
         }
         
-        titleView.titleLabel.text = presenter.userViewModel?.name
+        titleView.titleLabel.text = presenter.user?.name
         navigationItem.titleView = titleView
         
     }
     
-    func presentChatLogWithUser(userVM: UserViewModel) {
+    func presentChatLogWithUser(user: User) {
         let chatLogVC = ChatLogViewController(collectionViewLayout: UICollectionViewFlowLayout())
         let chatLogPresenter = ChatLogPresenter()
-        chatLogPresenter.userViewModel = userVM
+        chatLogPresenter.user = user
         chatLogVC.presenter = chatLogPresenter
         chatLogVC.presenter.grabMessages()
         navigationController?.pushViewController(chatLogVC, animated: true)

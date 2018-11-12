@@ -13,7 +13,6 @@
 		132DAD0321773E9800011A28 /* UIColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132DAD0221773E9800011A28 /* UIColorExtension.swift */; };
 		132DAD0521773ECD00011A28 /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132DAD0421773ECD00011A28 /* CustomTextField.swift */; };
 		133732B521731B5C001B7FDF /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133732B421731B5C001B7FDF /* TabBarController.swift */; };
-		133732B7217362FF001B7FDF /* ChatLog+TextFiledDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133732B6217362FF001B7FDF /* ChatLog+TextFiledDelegate.swift */; };
 		133732B921736532001B7FDF /* UIViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133732B821736532001B7FDF /* UIViewExtension.swift */; };
 		13F74E4C219551F30025AD6D /* RecentMessagesViewPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F74E4B219551F30025AD6D /* RecentMessagesViewPresenter.swift */; };
 		13F74E4E21955FF30025AD6D /* ChatLogPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F74E4D21955FF30025AD6D /* ChatLogPresenter.swift */; };
@@ -26,15 +25,13 @@
 		C42A18042127E1BB000DF253 /* NavigationBarTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C42A18032127E1BB000DF253 /* NavigationBarTitleView.swift */; };
 		C4438F4B210B11AC00DC0CB7 /* ChatLogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4438F4A210B11AC00DC0CB7 /* ChatLogViewController.swift */; };
 		C453E65B211F453700A758CD /* ChatInputsContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C453E65A211F453700A758CD /* ChatInputsContainerView.swift */; };
-		C4540DB62126AD1300E53C1B /* MessageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4540DB52126AD1300E53C1B /* MessageViewModel.swift */; };
-		C4540DB82127078300E53C1B /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4540DB72127078200E53C1B /* UserViewModel.swift */; };
+		C4540DB62126AD1300E53C1B /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4540DB52126AD1300E53C1B /* Message.swift */; };
 		C45AEFB920FD164100AFF008 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C45AEFB820FD164100AFF008 /* GoogleService-Info.plist */; };
 		C45BE3B820FAF6EB003706B5 /* LoginLogoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45BE3B720FAF6EB003706B5 /* LoginLogoutViewController.swift */; };
 		C46390C620FA19E800E4EA37 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46390C520FA19E800E4EA37 /* AppDelegate.swift */; };
 		C46390C820FA19E800E4EA37 /* RecentMessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46390C720FA19E800E4EA37 /* RecentMessagesViewController.swift */; };
 		C46390CD20FA19F500E4EA37 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C46390CC20FA19F500E4EA37 /* Assets.xcassets */; };
 		C46823712115718700DBDBC5 /* ChatCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46823702115718700DBDBC5 /* ChatCell.swift */; };
-		C46F9E412110233C00C869D2 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46F9E402110233C00C869D2 /* Message.swift */; };
 		C4D56BC72103B55C002D6681 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4D56BC62103B55C002D6681 /* User.swift */; };
 /* End PBXBuildFile section */
 
@@ -58,7 +55,6 @@
 		132DAD0221773E9800011A28 /* UIColorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorExtension.swift; sourceTree = "<group>"; };
 		132DAD0421773ECD00011A28 /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
 		133732B421731B5C001B7FDF /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
-		133732B6217362FF001B7FDF /* ChatLog+TextFiledDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChatLog+TextFiledDelegate.swift"; sourceTree = "<group>"; };
 		133732B821736532001B7FDF /* UIViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewExtension.swift; sourceTree = "<group>"; };
 		13F74E4B219551F30025AD6D /* RecentMessagesViewPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentMessagesViewPresenter.swift; sourceTree = "<group>"; };
 		13F74E4D21955FF30025AD6D /* ChatLogPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLogPresenter.swift; sourceTree = "<group>"; };
@@ -71,8 +67,7 @@
 		C42A18032127E1BB000DF253 /* NavigationBarTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarTitleView.swift; sourceTree = "<group>"; };
 		C4438F4A210B11AC00DC0CB7 /* ChatLogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLogViewController.swift; sourceTree = "<group>"; };
 		C453E65A211F453700A758CD /* ChatInputsContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInputsContainerView.swift; sourceTree = "<group>"; };
-		C4540DB52126AD1300E53C1B /* MessageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewModel.swift; sourceTree = "<group>"; };
-		C4540DB72127078200E53C1B /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
+		C4540DB52126AD1300E53C1B /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		C45AEFB820FD164100AFF008 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C45BE3B720FAF6EB003706B5 /* LoginLogoutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginLogoutViewController.swift; sourceTree = "<group>"; };
 		C46390C220FA19E800E4EA37 /* myMessenger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = myMessenger.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -81,7 +76,6 @@
 		C46390CC20FA19F500E4EA37 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C46390D120FA19F500E4EA37 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C46823702115718700DBDBC5 /* ChatCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCell.swift; sourceTree = "<group>"; };
-		C46F9E402110233C00C869D2 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		C4D56BC62103B55C002D6681 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		EC3E46C8D732B817344CF37B /* Pods-myMessenger.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-myMessenger.debug.xcconfig"; path = "Pods/Target Support Files/Pods-myMessenger/Pods-myMessenger.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -119,7 +113,6 @@
 			children = (
 				C4438F4A210B11AC00DC0CB7 /* ChatLogViewController.swift */,
 				13F74E4D21955FF30025AD6D /* ChatLogPresenter.swift */,
-				133732B6217362FF001B7FDF /* ChatLog+TextFiledDelegate.swift */,
 				C46823702115718700DBDBC5 /* ChatCell.swift */,
 			);
 			path = ChatLog;
@@ -212,9 +205,7 @@
 		C4EDA59A21122E2300359962 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				C4540DB52126AD1300E53C1B /* MessageViewModel.swift */,
-				C4540DB72127078200E53C1B /* UserViewModel.swift */,
-				C46F9E402110233C00C869D2 /* Message.swift */,
+				C4540DB52126AD1300E53C1B /* Message.swift */,
 				C4D56BC62103B55C002D6681 /* User.swift */,
 			);
 			path = Model;
@@ -409,8 +400,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C46390C820FA19E800E4EA37 /* RecentMessagesViewController.swift in Sources */,
-				C4540DB82127078300E53C1B /* UserViewModel.swift in Sources */,
-				133732B7217362FF001B7FDF /* ChatLog+TextFiledDelegate.swift in Sources */,
 				132DAD012177109800011A28 /* CustomView.swift in Sources */,
 				132DAD0521773ECD00011A28 /* CustomTextField.swift in Sources */,
 				22F3932E2138E95C00241A94 /* Networking.swift in Sources */,
@@ -418,7 +407,7 @@
 				13F74E4E21955FF30025AD6D /* ChatLogPresenter.swift in Sources */,
 				133732B521731B5C001B7FDF /* TabBarController.swift in Sources */,
 				C453E65B211F453700A758CD /* ChatInputsContainerView.swift in Sources */,
-				C4540DB62126AD1300E53C1B /* MessageViewModel.swift in Sources */,
+				C4540DB62126AD1300E53C1B /* Message.swift in Sources */,
 				C40E4F20210344A3001B418C /* ContactsController.swift in Sources */,
 				C4D56BC72103B55C002D6681 /* User.swift in Sources */,
 				133732B921736532001B7FDF /* UIViewExtension.swift in Sources */,
@@ -426,7 +415,6 @@
 				C45BE3B820FAF6EB003706B5 /* LoginLogoutViewController.swift in Sources */,
 				13F74E4C219551F30025AD6D /* RecentMessagesViewPresenter.swift in Sources */,
 				1300FDD321783CFA00010494 /* URLExtension.swift in Sources */,
-				C46F9E412110233C00C869D2 /* Message.swift in Sources */,
 				C46390C620FA19E800E4EA37 /* AppDelegate.swift in Sources */,
 				C409411A21117EB700A190CF /* UserCell.swift in Sources */,
 				132DAD0321773E9800011A28 /* UIColorExtension.swift in Sources */,

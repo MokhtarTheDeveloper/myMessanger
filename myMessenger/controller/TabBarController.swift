@@ -12,7 +12,7 @@ import Firebase
 class TabBarController: UITabBarController {
     
     
-    var userViewModel : UserViewModel?
+    var user : User?
 
     override func viewDidLoad() {
         
@@ -47,7 +47,7 @@ class TabBarController: UITabBarController {
             
             Firebase.Database.database().reference().child("user").child(uid).observe(.value, with: { (dataSnap) in
                 if let dictionary = dataSnap.value as? [String : AnyObject]{
-                    self.userViewModel = UserViewModel(user: User(dictionary: dictionary, id: uid))
+                    self.user = User(dictionary: dictionary, id: uid)
                     
                 }
             }) { (error) in

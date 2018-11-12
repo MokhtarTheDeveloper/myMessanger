@@ -36,16 +36,16 @@ class ContactsController: UITableViewController , ContactPresenterDelegate{
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return presenter.usersViewModelArray.count
+        return presenter.usersArray.count
     }
 
     
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cellID", for: indexPath) as! UserCell
-        cell.textLabel?.text = presenter.usersViewModelArray[indexPath.row].name
-        cell.detailTextLabel?.text = presenter.usersViewModelArray[indexPath.row].mail
-        if let url = presenter.usersViewModelArray[indexPath.row].userProfileImageUrl {
+        cell.textLabel?.text = presenter.usersArray[indexPath.row].name
+        cell.detailTextLabel?.text = presenter.usersArray[indexPath.row].mail
+        if let url = presenter.usersArray[indexPath.row].profileImageURL {
             cell.profileImageView.sd_setImage(with: url, completed: nil)
         }
         return cell
@@ -58,14 +58,14 @@ class ContactsController: UITableViewController , ContactPresenterDelegate{
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         navigationController?.popViewController(animated: true)
-        presentChatLogWithUser(userVM: presenter.usersViewModelArray[indexPath.row])
+        presentChatLogWithUser(user: presenter.usersArray[indexPath.row])
     }
     
     
-    @objc func presentChatLogWithUser(userVM: UserViewModel) {
+    @objc func presentChatLogWithUser(user: User) {
         let chatLogVC = ChatLogViewController(collectionViewLayout: UICollectionViewFlowLayout())
         let chatLogPresenter = ChatLogPresenter()
-        chatLogPresenter.userViewModel = userVM
+        chatLogPresenter.user = user
         chatLogVC.presenter = chatLogPresenter
         chatLogVC.presenter.grabMessages()
         navigationController?.pushViewController(chatLogVC, animated: true)

@@ -13,11 +13,11 @@ protocol ChatCellDelegate : class {
     func playVideo(for cell : ChatCell)
     func playAudio(for cell : ChatCell)
     func stopAudio()
+    func handleZomingImageWithImageView(tappedImageView: UIImageView, cell: ChatCell)
 }
 
 class ChatCell : UICollectionViewCell {
     
-    var messageVM : MessageViewModel?
     weak var delegate : ChatCellDelegate?
     
     let textView : UITextView = {
@@ -49,7 +49,6 @@ class ChatCell : UICollectionViewCell {
         return spinner
     }()
     
-    
     @objc func playVideo() {
         delegate?.playVideo(for: self)
     }
@@ -63,7 +62,6 @@ class ChatCell : UICollectionViewCell {
         self.chatImage.image = nil
         delegate?.stopAudio()
     }
-    
     
     let bubbleView : UIView = {
         let bubView = UIView()
@@ -117,14 +115,10 @@ class ChatCell : UICollectionViewCell {
     
     @objc private func handleZomingImage() {
         
-//        if messageVM?.videoDownloadUrl != nil {
-//            return
-//        }
-//        let tappedImageView = chatImage
-//        
-//        if let VC = chatLogVC {
-//            VC.handleZomingImageWithImageView(tappedImageView: tappedImageView)
-//        }
+        let tappedImageView = chatImage
+        
+        delegate?.handleZomingImageWithImageView(tappedImageView: tappedImageView, cell: self)
+        
     }
     
     override var isSelected: Bool {
